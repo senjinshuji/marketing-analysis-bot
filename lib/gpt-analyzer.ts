@@ -56,7 +56,7 @@ export class GPTAnalyzer {
     }
   }
 
-  private async executePhase1Analysis(scrapedData: any): Promise<any> {
+  async executePhase1Analysis(scrapedData: any): Promise<any> {
     const prompt = this.createPhase1Prompt(scrapedData)
     
     try {
@@ -108,7 +108,7 @@ Step2: 詳細要素抽出
     }
   }
 
-  private async executePhase2Analysis(scrapedData: any, phase1Result: any, marketingTemplate: any): Promise<any> {
+  async executePhase2Analysis(scrapedData: any, phase1Result: any, marketingTemplate: any): Promise<any> {
     const prompt = this.createPhase2Prompt(scrapedData, phase1Result, marketingTemplate)
     
     try {

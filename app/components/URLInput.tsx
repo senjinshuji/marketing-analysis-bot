@@ -5,9 +5,10 @@ import { useState } from 'react'
 interface URLInputProps {
   onAnalyze: (url: string) => void
   isLoading: boolean
+  phase?: 'idle' | 'phase1' | 'phase2' | 'complete'
 }
 
-export default function URLInput({ onAnalyze, isLoading }: URLInputProps) {
+export default function URLInput({ onAnalyze, isLoading, phase = 'idle' }: URLInputProps) {
   const [url, setUrl] = useState('')
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -73,13 +74,28 @@ export default function URLInput({ onAnalyze, isLoading }: URLInputProps) {
           <div className="flex items-start space-x-3">
             <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600 mt-0.5"></div>
             <div>
-              <h3 className="text-sm font-medium text-blue-800">分析を実行中</h3>
+              <h3 className="text-sm font-medium text-blue-800">
+                {phase === 'phase1' && 'フェーズ1: マーケティングリサーチ分析中'}
+                {phase === 'phase2' && 'フェーズ2: 媒体戦略分析中'}
+                {(phase === 'idle' || phase === 'complete') && '分析を実行中'}
+              </h3>
               <div className="mt-2 text-sm text-blue-700">
                 <ul className="space-y-1">
-                  <li>• 商品情報を取得しています...</li>
-                  <li>• 市場分析を実行しています...</li>
-                  <li>• 最適な広告戦略を生成しています...</li>
+                  <li className={phase === 'phase1' ? 'font-bold' : ''}>
+                    {phase === 'phase1' ? '▶' : '•'} 商品情報・市場分析を実行中...
+                  </li>
+                  <li className={phase === 'phase2' ? 'font-bold' : ''}>
+                    {phase === 'phase2' ? '▶' : '•'} 広告媒体・戦略を生成中...
+                  </li>
                 </ul>
+              </div>
+              <div className="mt-3">
+                <div className="bg-gray-200 rounded-full h-2 overflow-hidden">
+                  <div 
+                    className="bg-blue-600 h-full transition-all duration-500"
+                    style={{ width: phase === 'phase1' ? '50%' : phase === 'phase2' ? '100%' : '0%' }}
+                  />
+                </div>
               </div>
             </div>
           </div>
