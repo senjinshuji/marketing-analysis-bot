@@ -27,12 +27,23 @@ export async function POST(request: NextRequest) {
       const apiKey = process.env.OPENAI_API_KEY
       if (apiKey && apiKey !== 'your-api-key-here') {
         const gptAnalyzer = new GPTAnalyzer(apiKey)
+        const startTime = Date.now()
         const phase1Result = await gptAnalyzer.executePhase1Analysis(scrapedData)
+        const timing = Date.now() - startTime
         
+        // デバッグ情報を含める
         return NextResponse.json({
           phase1: phase1Result,
           scrapedData: scrapedData,
-          status: 'phase1_complete'
+          status: 'phase1_complete',
+          debug: {
+            phase1: {
+              prompt: gptAnalyzer.getLastPhase1Prompt(),
+              response: phase1Result,
+              timing: timing
+            },
+            scrapedData: scrapedData
+          }
         })
       }
       

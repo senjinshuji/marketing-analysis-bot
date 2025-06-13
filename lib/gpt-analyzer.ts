@@ -2,6 +2,8 @@ import OpenAI from 'openai'
 
 export class GPTAnalyzer {
   private client: OpenAI
+  private lastPhase1Prompt: string = ''
+  private lastPhase2Prompt: string = ''
 
   constructor(apiKey: string) {
     this.client = new OpenAI({
@@ -58,6 +60,7 @@ export class GPTAnalyzer {
 
   async executePhase1Analysis(scrapedData: any): Promise<any> {
     const prompt = this.createPhase1Prompt(scrapedData)
+    this.lastPhase1Prompt = prompt
     
     try {
       const completion = await this.client.chat.completions.create({
@@ -110,6 +113,7 @@ Step2: 詳細要素抽出
 
   async executePhase2Analysis(scrapedData: any, phase1Result: any, marketingTemplate: any): Promise<any> {
     const prompt = this.createPhase2Prompt(scrapedData, phase1Result, marketingTemplate)
+    this.lastPhase2Prompt = prompt
     
     try {
       const completion = await this.client.chat.completions.create({
@@ -390,6 +394,14 @@ ${JSON.stringify(marketingTemplate.fullMediaDatabase, null, 2)}
 
 ## 出力形式
 JSON形式で、全ての項目を漏れなく出力してください。`
+  }
+
+  getLastPhase1Prompt(): string {
+    return this.lastPhase1Prompt
+  }
+
+  getLastPhase2Prompt(): string {
+    return this.lastPhase2Prompt
   }
 
   private createAnalysisPrompt(scrapedData: any, marketingTemplate: any): string {

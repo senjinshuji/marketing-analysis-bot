@@ -4,7 +4,7 @@ import { marketingTemplate } from '../../../lib/marketing-template'
 
 export async function POST(request: NextRequest) {
   try {
-    const { phase1Result, scrapedData } = await request.json()
+    const { phase1Result, scrapedData, debugData } = await request.json()
     
     if (!phase1Result || !scrapedData) {
       return NextResponse.json({ error: 'フェーズ1の結果が必要です' }, { status: 400 })
@@ -14,7 +14,9 @@ export async function POST(request: NextRequest) {
     const apiKey = process.env.OPENAI_API_KEY
     if (apiKey && apiKey !== 'your-api-key-here') {
       const gptAnalyzer = new GPTAnalyzer(apiKey)
+      const startTime = Date.now()
       const phase2Result = await gptAnalyzer.executePhase2Analysis(scrapedData, phase1Result, marketingTemplate)
+      const timing = Date.now() - startTime
       
       // 結果を統合
       const finalResult = {
@@ -24,6 +26,14 @@ export async function POST(request: NextRequest) {
           ageRange: `${phase1Result.persona?.profile?.age || '35歳'}を中心とした年齢層`,
           gender: phase1Result.persona?.profile?.gender || '男女両方',
           otherCharacteristics: phase1Result.persona?.profile?.familyStructure || '一般的な消費者層'
+        },
+        debug: {
+          ...debugData,
+          phase2: {
+            prompt: gptAnalyzer.getLastPhase2Prompt(),
+            response: phase2Result,
+            timing: timing
+          }
         }
       }
       

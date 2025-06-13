@@ -3,11 +3,14 @@
 import { useState } from 'react'
 import URLInput from './components/URLInput'
 import AnalysisResult from './components/AnalysisResult'
+import AnalysisDebug from './components/AnalysisDebug'
 
 export default function Home() {
   const [analysisData, setAnalysisData] = useState(null)
   const [isLoading, setIsLoading] = useState(false)
   const [phase, setPhase] = useState<'idle' | 'phase1' | 'phase2' | 'complete'>('idle')
+  const [debugData, setDebugData] = useState<any>(null)
+  const [showDebug, setShowDebug] = useState(false)
 
   const handleAnalyze = async (url: string) => {
     setIsLoading(true)
@@ -29,6 +32,11 @@ export default function Home() {
       const phase1Data = await phase1Response.json()
       console.log('フェーズ1完了:', phase1Data)
       
+      // デバッグデータを保存
+      if (phase1Data.debug) {
+        setDebugData(phase1Data.debug)
+      }
+      
       // フェーズ2: 媒体戦略
       setPhase('phase2')
       const phase2Response = await fetch('/api/analyze-phase2', {
@@ -38,7 +46,8 @@ export default function Home() {
         },
         body: JSON.stringify({
           phase1Result: phase1Data.phase1,
-          scrapedData: phase1Data.scrapedData
+          scrapedData: phase1Data.scrapedData,
+          debugData: phase1Data.debug
         }),
       })
       
@@ -49,6 +58,11 @@ export default function Home() {
       } else {
         const finalData = await phase2Response.json()
         setAnalysisData(finalData)
+        
+        // デバッグデータを更新
+        if (finalData.debug) {
+          setDebugData(finalData.debug)
+        }
       }
       
       setPhase('complete')
@@ -77,7 +91,24 @@ export default function Home() {
           <URLInput onAnalyze={handleAnalyze} isLoading={isLoading} phase={phase} />
           
           {analysisData && (
-            <AnalysisResult data={analysisData} />
+            <>
+              <AnalysisResult data={analysisData} />
+              
+              {/* デバッグモードトグル */}
+              <div className="mt-4 text-center">
+                <button
+                  onClick={() => setShowDebug(!showDebug)}
+                  className="text-sm text-gray-500 hover:text-gray-700 underline"
+                >
+                  {showDebug ? 'GPT分析プロセスを非表示' : 'GPT分析プロセスを表示'}
+                </button>
+              </div>
+              
+              {/* デバッグ情報 */}
+              {showDebug && debugData && (
+                <AnalysisDebug debugData={debugData} />
+              )}
+            </>
           )}
         </div>
       </div>
