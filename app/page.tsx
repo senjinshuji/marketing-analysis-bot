@@ -11,7 +11,8 @@ export default function Home() {
   const handleAnalyze = async (url: string) => {
     setIsLoading(true)
     try {
-      const response = await fetch('/api/analyze', {
+      // Edge functionを使用（タイムアウトなし）
+      const response = await fetch('/api/analyze-edge', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -20,11 +21,26 @@ export default function Home() {
       })
       
       if (!response.ok) {
-        throw new Error('分析に失敗しました')
+        // フォールバックとして通常のAPIを試す
+        console.log('Edge functionが失敗、通常APIを試します')
+        const fallbackResponse = await fetch('/api/analyze', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ url }),
+        })
+        
+        if (!fallbackResponse.ok) {
+          throw new Error('分析に失敗しました')
+        }
+        
+        const data = await fallbackResponse.json()
+        setAnalysisData(data)
+      } else {
+        const data = await response.json()
+        setAnalysisData(data)
       }
-      
-      const data = await response.json()
-      setAnalysisData(data)
     } catch (error) {
       console.error('分析エラー:', error)
       alert('分析に失敗しました。URLを確認してください。')

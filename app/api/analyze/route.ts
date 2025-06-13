@@ -388,6 +388,9 @@ function generateDefaultMockData() {
   }
 }
 
+// Vercel Free planは10秒、Proは60秒のタイムアウト
+export const maxDuration = 60; // Pro plan用の設定
+
 export async function POST(request: NextRequest) {
   try {
     const { url } = await request.json()
@@ -409,7 +412,13 @@ export async function POST(request: NextRequest) {
       )
     }
     
+    console.log('分析開始:', url)
+    const startTime = Date.now()
+    
     const analysisResult = await analyzeUrl(url)
+    
+    const processingTime = Date.now() - startTime
+    console.log(`分析完了: ${processingTime}ms`)
     
     return NextResponse.json(analysisResult)
     

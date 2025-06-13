@@ -13,22 +13,45 @@ export class GPTAnalyzer {
     try {
       console.log('GPTAnalyzer: 分析開始', { url: scrapedData.url, title: scrapedData.title })
       
-      // フェーズ1: マーケティングリサーチ分析
-      console.log('フェーズ1開始...')
-      const phase1Result = await this.executePhase1Analysis(scrapedData)
-      console.log('フェーズ1完了:', phase1Result)
-      
-      // フェーズ2: 媒体分類・獲得戦略
-      console.log('フェーズ2開始...')
-      const phase2Result = await this.executePhase2Analysis(scrapedData, phase1Result, marketingTemplate)
-      console.log('フェーズ2完了:', phase2Result)
-      
-      // 結果の統合
-      const mergedResult = this.mergeAnalysisResults(phase1Result, phase2Result)
-      console.log('分析結果統合完了')
-      return mergedResult
+      // 単一の統合プロンプトで高速化
+      const result = await this.executeCombinedAnalysis(scrapedData, marketingTemplate)
+      console.log('分析完了')
+      return result
     } catch (error) {
       console.error('GPTAnalyzer分析エラー:', error)
+      throw error
+    }
+  }
+
+  private async executeCombinedAnalysis(scrapedData: any, marketingTemplate: any): Promise<any> {
+    const prompt = this.createCombinedPrompt(scrapedData, marketingTemplate)
+    
+    try {
+      const completion = await this.client.chat.completions.create({
+        model: 'gpt-3.5-turbo-0125',  // より高速なモデル
+        messages: [
+          {
+            role: 'system',
+            content: `あなたは日本のデジタルマーケティング戦略の専門家です。商品分析と媒体戦略を一度に行います。`
+          },
+          {
+            role: 'user',
+            content: prompt
+          }
+        ],
+        temperature: 0.3,
+        max_tokens: 3000,
+        response_format: { type: "json_object" }
+      })
+
+      const content = completion.choices[0].message.content
+      if (content) {
+        return JSON.parse(content)
+      }
+      
+      throw new Error('予期しないレスポンス形式')
+    } catch (error) {
+      console.error('統合分析エラー:', error)
       throw error
     }
   }
@@ -332,6 +355,41 @@ ${JSON.stringify(marketingTemplate.fullMediaDatabase, null, 2)}
         otherCharacteristics: phase1Result.persona.profile.familyStructure
       }
     }
+  }
+
+  private createCombinedPrompt(scrapedData: any, marketingTemplate: any): string {
+    return `以下の商品を分析し、マーケティング戦略と広告媒体を提案してください。
+
+## 分析対象
+- URL: ${scrapedData.url || 'N/A'}
+- タイトル: ${scrapedData.title}
+- 説明: ${scrapedData.description}
+- 価格: ${scrapedData.price}
+- 特徴: ${JSON.stringify(scrapedData.features)}
+
+## 必須分析項目
+1. 商品情報（名称、カテゴリー、特徴、効果、RTB、権威性）
+2. 価格情報
+3. デモグラフィック
+4. 提供価値（機能的/情緒的）
+5. 市場分析
+6. N1ペルソナ
+7. 市場タイプ分類（ニッチ/マス）
+8. 行動理由分類
+9. 推奨広告媒体（3つ選択）
+
+## 媒体選択ルール
+- ニッチ×自分ごと化: 1,2,7,19,22,23,24,25,28,29,30,31,33
+- ニッチ×toB: 1,2,3,4,5,6,7,25,28,29,30,31
+- マス×オファー: 7,10,11,13,16,17,19,21,22,24,25,27,28,30,31
+- マス×権威性: 7,8,11,12,13,14,17,18,19,22,23,24,25,28,29,31
+- マス×新事実: 7,25,32,33
+
+## 媒体データベース
+${JSON.stringify(marketingTemplate.fullMediaDatabase, null, 2)}
+
+## 出力形式
+JSON形式で、全ての項目を漏れなく出力してください。`
   }
 
   private createAnalysisPrompt(scrapedData: any, marketingTemplate: any): string {
