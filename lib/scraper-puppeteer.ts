@@ -1,5 +1,10 @@
-import puppeteer from 'puppeteer-core'
-import chromium from '@sparticuz/chromium'
+let puppeteer: any
+let chromium: any
+
+if (typeof window === 'undefined') {
+  puppeteer = require('puppeteer-core')
+  chromium = require('@sparticuz/chromium')
+}
 
 // Vercel環境チェック
 const isVercel = process.env.VERCEL === '1'
@@ -32,11 +37,19 @@ export class WebScraper {
         })
       } else {
         // ローカル環境用の設定
-        const puppeteerLocal = await import('puppeteer')
-        this.browser = await puppeteerLocal.default.launch({
-          headless: true,
-          args: ['--no-sandbox', '--disable-setuid-sandbox']
-        })
+        try {
+          const puppeteerLocal = await import('puppeteer')
+          this.browser = await puppeteerLocal.default.launch({
+            headless: true,
+            args: ['--no-sandbox', '--disable-setuid-sandbox']
+          })
+        } catch (e) {
+          // ローカルでもpuppeteer-coreを使用
+          this.browser = await puppeteer.launch({
+            headless: true,
+            args: ['--no-sandbox', '--disable-setuid-sandbox']
+          })
+        }
       }
     }
   }
