@@ -54,8 +54,13 @@ async function analyzeUrl(url: string) {
         const gptAnalysis = await gptAnalyzer.analyzeProduct(scrapedData, marketingTemplate)
         console.log('GPT-4分析結果:', gptAnalysis)
         return gptAnalysis
-      } catch (gptError) {
+      } catch (gptError: any) {
         console.error('GPT-4分析エラー:', gptError)
+        console.error('GPT-4エラー詳細:', {
+          message: gptError.message,
+          stack: gptError.stack,
+          response: gptError.response?.data
+        })
         // GPT-4エラー時は簡易分析にフォールバック
       }
     }
