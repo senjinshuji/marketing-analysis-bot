@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { WebScraper } from '../../../lib/scraper'
+import { WebScraper } from '../../../lib/scraper-puppeteer'
 import { GPTAnalyzer } from '../../../lib/gpt-analyzer'
 import { marketingTemplate } from '../../../lib/marketing-template'
 

@@ -1,4 +1,8 @@
-import { chromium, Browser, Page } from 'playwright'
+import puppeteer from 'puppeteer-core'
+import chromium from '@sparticuz/chromium'
+
+// Vercel環境チェック
+const isVercel = process.env.VERCEL === '1'
 
 export interface ScrapedData {
   title: string
@@ -14,14 +18,26 @@ export interface ScrapedData {
 }
 
 export class WebScraper {
-  private browser: Browser | null = null
+  private browser: any = null
 
   async init() {
     if (!this.browser) {
-      this.browser = await chromium.launch({
-        headless: true,
-        args: ['--no-sandbox', '--disable-setuid-sandbox']
-      })
+      if (isVercel) {
+        // Vercel環境用の設定
+        this.browser = await puppeteer.launch({
+          args: chromium.args,
+          defaultViewport: chromium.defaultViewport,
+          executablePath: await chromium.executablePath(),
+          headless: chromium.headless,
+        })
+      } else {
+        // ローカル環境用の設定
+        const puppeteerLocal = await import('puppeteer')
+        this.browser = await puppeteerLocal.default.launch({
+          headless: true,
+          args: ['--no-sandbox', '--disable-setuid-sandbox']
+        })
+      }
     }
   }
 
@@ -35,14 +51,14 @@ export class WebScraper {
   async scrapeUrl(url: string): Promise<ScrapedData> {
     await this.init()
     
-    const page = await this.browser!.newPage()
+    const page = await this.browser.newPage()
     
     try {
       // ページにアクセス
       console.log('アクセス中:', url)
       await page.goto(url, { 
-        waitUntil: 'domcontentloaded', // networkidleより高速
-        timeout: 15000 // タイムアウトを短縮
+        waitUntil: 'domcontentloaded',
+        timeout: 15000
       })
       
       // 少し待機してコンテンツを読み込む
@@ -186,38 +202,25 @@ export class WebScraper {
 
   // 特定サイト向けの専用スクレイパー
   async scrapeTsukurioki(url: string): Promise<ScrapedData> {
-    await this.init()
-    const page = await this.browser!.newPage()
-    
-    try {
-      await page.goto(url, { waitUntil: 'networkidle', timeout: 30000 })
-      
-      const data = await page.evaluate(() => {
-        return {
-          title: 'つくりおき.jp',
-          description: '管理栄養士監修のプロの手作りごはんが、冷蔵で届く宅配食サービス',
-          price: '1人前798円〜（税＆送料込み）',
-          images: [],
-          features: [
-            'プロの手作り',
-            '週替わりメニュー', 
-            '栄養士監修のメニュー',
-            '出来立ての味が冷蔵で届く',
-            'LINEで3STEP簡単注文',
-            'レンジでチンするだけでOK',
-            '5分で食卓が完成'
-          ],
-          category: '宅配食（冷凍）、家庭料理',
-          metaDescription: '',
-          ogTitle: '',
-          ogDescription: '',
-          structuredData: null
-        }
-      })
-
-      return data
-    } finally {
-      await page.close()
+    return {
+      title: 'つくりおき.jp',
+      description: '管理栄養士監修のプロの手作りごはんが、冷蔵で届く宅配食サービス',
+      price: '1人前798円〜（税＆送料込み）',
+      images: [],
+      features: [
+        'プロの手作り',
+        '週替わりメニュー', 
+        '栄養士監修のメニュー',
+        '出来立ての味が冷蔵で届く',
+        'LINEで3STEP簡単注文',
+        'レンジでチンするだけでOK',
+        '5分で食卓が完成'
+      ],
+      category: '宅配食（冷凍）、家庭料理',
+      metaDescription: '',
+      ogTitle: '',
+      ogDescription: '',
+      structuredData: null
     }
   }
 }
