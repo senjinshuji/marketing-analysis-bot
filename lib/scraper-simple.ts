@@ -11,6 +11,7 @@ export interface ScrapedData {
   ogTitle: string
   ogDescription: string
   structuredData: any
+  url?: string
 }
 
 export class WebScraper {
