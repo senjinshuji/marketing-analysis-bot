@@ -1,0 +1,484 @@
+{
+  "systemOverview": {
+    "name": "マーケティング戦略分析Bot",
+    "description": "URLを入力すると、詳細な市場分析を行い、最適な広告媒体と獲得手法を提案するシステム"
+  },
+  "analysisStructure": {
+    "phase1_comprehensiveAnalysis": {
+      "description": "URLから包括的な情報を収集・分析",
+      "sections": {
+        "1_productInfo": {
+          "title": "商品・製品情報",
+          "items": [
+            "商品名",
+            "商品URL",
+            "カテゴリー",
+            "サイズ・容量",
+            "機能（箇条書きで複数）",
+            "効果（箇条書きで複数）",
+            "RTB（Reason to Believe）",
+            "権威性"
+          ]
+        },
+        "2_pricing": {
+          "title": "価格・販売情報",
+          "items": [
+            "通常価格",
+            "特別オファー価格",
+            "キャンペーン情報",
+            "発売日",
+            "販売チャネル"
+          ]
+        },
+        "3_demographics": {
+          "title": "デモグラフィック分析",
+          "items": [
+            "年齢層分布",
+            "性別比率",
+            "その他特性（世帯構成、職業等）"
+          ]
+        },
+        "4_valueProposition": {
+          "title": "提供価値分析",
+          "items": {
+            "functionalValue": [
+              "時短・効率化価値",
+              "問題解決価値",
+              "利便性価値"
+            ],
+            "emotionalValue": [
+              "誰が（ペルソナ）",
+              "どんな状況で",
+              "どう感じるか"
+            ]
+          }
+        },
+        "5_marketAnalysis": {
+          "title": "市場分析",
+          "items": [
+            "市場定義（機能・情緒価値が刺さる最大市場）",
+            "市場カテゴリー",
+            "市場規模（金額）",
+            "購入者数（年間）",
+            "AOV（平均購入単価）",
+            "戦略ターゲット",
+            "コアターゲット"
+          ]
+        },
+        "6_n1PersonaAnalysis": {
+          "title": "N1ペルソナ詳細分析",
+          "profile": {
+            "basic": [
+              "年齢",
+              "性別",
+              "居住地",
+              "職業",
+              "役職",
+              "業種",
+              "年収",
+              "学歴"
+            ],
+            "lifestyle": [
+              "家族構成",
+              "生活リズム（平日・休日）",
+              "趣味・興味関心",
+              "利用メディア",
+              "日常の購入商品",
+              "非日常の購入商品"
+            ]
+          },
+          "customerJourney": {
+            "situation": "具体的なシーン描写",
+            "sensory": {
+              "external": "五感情報（音、視覚等）",
+              "internal": "体感覚（疲労、空腹等）"
+            },
+            "psychology": {
+              "instinct": "本能（生存、子孫繁栄等）",
+              "perception": "知覚・バックグラウンド",
+              "emotion": "感情（快・不快）",
+              "desire": "欲求"
+            },
+            "demand": {
+              "needs": "具体的な需要",
+              "category": "求めるカテゴリー",
+              "priceRange": "予算感",
+              "conditions": "その他必要条件"
+            }
+          }
+        },
+        "7_competitorAnalysis": {
+          "title": "競合分析",
+          "items": {
+            "categoryCompetitors": {
+              "name": "カテゴリー競合",
+              "brands": "競合ブランド名",
+              "products": "競合商品・サービス"
+            },
+            "differentiation": {
+              "usp": "独自の便益",
+              "preference": "選ばれる理由"
+            }
+          }
+        },
+        "8_brandConcept": {
+          "title": "ブランドコンセプト",
+          "items": [
+            "市場での立ち位置",
+            "需要の捉え方",
+            "特徴（便益提供特徴）",
+            "提供便益",
+            "コンセプト（一言で表現）",
+            "ブランドキャラクター"
+          ]
+        }
+      }
+    },
+    "phase2_classification": {
+      "description": "分析結果を基に案件を分類",
+      "step1": {
+        "name": "市場タイプ判定",
+        "logic": {
+          "niche": {
+            "criteria": [
+              "特定の悩み・課題に特化",
+              "専門性が高い",
+              "ターゲットが限定的",
+              "単価が高い傾向"
+            ],
+            "examples": ["塾", "専門ペット用品", "B2B向けサービス", "人材", "不動産査定"]
+          },
+          "mass": {
+            "criteria": [
+              "幅広い層が対象",
+              "一般的な悩み・欲求",
+              "認知度重視",
+              "価格訴求が効く"
+            ],
+            "examples": ["DIO", "メンズクリア", "シボラナイト2", "オイグルト", "cocone", "りそこ"]
+          }
+        }
+      },
+      "step2": {
+        "name": "行動理由分類",
+        "categories": {
+          "niche_personal": {
+            "type": "ニッチ",
+            "reason": "自分ごと化させて行動してもらう",
+            "targetExamples": "塾、ペット",
+            "mediaIds": ["1", "2", "7", "19", "22", "23", "24", "25", "28", "29", "30", "31", "33"]
+          },
+          "niche_b2b": {
+            "type": "ニッチ",
+            "reason": "to B向けに適した配信",
+            "targetExamples": "人材、不動産査定",
+            "mediaIds": ["1", "2", "3", "4", "5", "6", "7", "25", "28", "29", "30", "31"]
+          },
+          "mass_offer": {
+            "type": "マス向け",
+            "reason": "オファーが魅力的、とにかく安い（無料、500円オファー、LINE追加など）",
+            "targetExamples": "DIO, メンズクリア",
+            "mediaIds": ["7", "10", "11", "13", "16", "17", "19", "21", "22", "24", "25", "27", "28", "30", "31"]
+          },
+          "mass_authority": {
+            "type": "マス向け",
+            "reason": "訴求が強い、権威性がある、悩みが解決できる（治る）",
+            "targetExamples": "シボラナイト2",
+            "mediaIds": ["7", "8", "11", "12", "13", "14", "17", "18", "19", "22", "23", "24", "25", "28", "29", "31"]
+          },
+          "mass_newFact": {
+            "type": "マス向け",
+            "reason": "新事実系、テクスチャーが特徴的",
+            "targetExamples": "オイグルト、cocone、りそこ",
+            "mediaIds": ["7", "25", "32", "33"]
+          }
+        }
+      }
+    },
+    "phase3_mediaStrategy": {
+      "description": "最適な媒体と獲得手法の提案",
+      "mediaDatabase": {
+        "1": {
+          "id": "1",
+          "media": "リスティング",
+          "target": "指名検索",
+          "method": "指名入札",
+          "description": "ブランド名・商品名での検索広告"
+        },
+        "2": {
+          "id": "2",
+          "media": "リスティング",
+          "target": "一般検索",
+          "method": "一般入札",
+          "description": "関連キーワードでの検索広告"
+        },
+        "3": {
+          "id": "3",
+          "media": "GDN（静止画）",
+          "target": "ブロード",
+          "method": "バナー",
+          "description": "幅広い層へのディスプレイ広告"
+        },
+        "4": {
+          "id": "4",
+          "media": "GDN（静止画）",
+          "target": "リターゲティング",
+          "method": "リスト×バナー",
+          "description": "サイト訪問者への再訴求"
+        },
+        "5": {
+          "id": "5",
+          "media": "デマンド静止画",
+          "target": "discover,Youtube限定",
+          "method": "ニュース風正方形バナー",
+          "description": "ニュース風デザインでの訴求"
+        },
+        "6": {
+          "id": "6",
+          "media": "デマンド静止画",
+          "target": "gmail限定",
+          "method": "メール風テキスト×画像",
+          "description": "メール形式での自然な訴求"
+        },
+        "7": {
+          "id": "7",
+          "media": "デマンドロング",
+          "target": "YT面限定",
+          "method": "語り",
+          "description": "ナレーション中心の動画広告"
+        },
+        "8": {
+          "id": "8",
+          "media": "デマンドロング",
+          "target": "YT面限定",
+          "method": "文字",
+          "description": "テキスト中心の動画広告"
+        },
+        "9": {
+          "id": "9",
+          "media": "デマンドロング",
+          "target": "YT面限定",
+          "method": "漫画",
+          "description": "漫画形式のストーリー広告"
+        },
+        "10": {
+          "id": "10",
+          "media": "デマンドロング",
+          "target": "YT面限定",
+          "method": "ドラマ",
+          "description": "実写ドラマ形式の広告"
+        },
+        "11": {
+          "id": "11",
+          "media": "デマンドロング",
+          "target": "YT面限定",
+          "method": "イラスト、AI",
+          "description": "イラストやAI生成素材を使用"
+        },
+        "12": {
+          "id": "12",
+          "media": "デマンドロング",
+          "target": "YT面限定",
+          "method": "通常",
+          "description": "一般的な動画広告フォーマット"
+        },
+        "13": {
+          "id": "13",
+          "media": "デマンドshorts",
+          "target": "YT面限定",
+          "method": "語り",
+          "description": "縦型短尺動画（語り）"
+        },
+        "14": {
+          "id": "14",
+          "media": "デマンドshorts",
+          "target": "YT面限定",
+          "method": "文字",
+          "description": "縦型短尺動画（文字）"
+        },
+        "15": {
+          "id": "15",
+          "media": "デマンドshorts",
+          "target": "YT面限定",
+          "method": "漫画",
+          "description": "縦型短尺動画（漫画）"
+        },
+        "16": {
+          "id": "16",
+          "media": "デマンドshorts",
+          "target": "YT面限定",
+          "method": "ドラマ",
+          "description": "縦型短尺動画（ドラマ）"
+        },
+        "17": {
+          "id": "17",
+          "media": "デマンドshorts",
+          "target": "YT面限定",
+          "method": "イラスト、AI",
+          "description": "縦型短尺動画（イラスト・AI）"
+        },
+        "18": {
+          "id": "18",
+          "media": "デマンドshorts",
+          "target": "YT面限定",
+          "method": "通常",
+          "description": "縦型短尺動画（通常）"
+        },
+        "19": {
+          "id": "19",
+          "media": "ByteDance",
+          "target": "tiktok限定",
+          "method": "語り",
+          "description": "TikTok向け語り動画"
+        },
+        "20": {
+          "id": "20",
+          "media": "ByteDance",
+          "target": "tiktok限定",
+          "method": "漫画",
+          "description": "TikTok向け漫画動画"
+        },
+        "21": {
+          "id": "21",
+          "media": "ByteDance",
+          "target": "tiktok限定",
+          "method": "ドラマ",
+          "description": "TikTok向けドラマ動画"
+        },
+        "22": {
+          "id": "22",
+          "media": "ByteDance",
+          "target": "tiktok限定",
+          "method": "イラスト、AI",
+          "description": "TikTok向けイラスト・AI動画"
+        },
+        "23": {
+          "id": "23",
+          "media": "ByteDance",
+          "target": "tiktok限定",
+          "method": "通常",
+          "description": "通常動画（Pangle用お得系動画含む）"
+        },
+        "24": {
+          "id": "24",
+          "media": "ByteDance",
+          "target": "tiktok限定",
+          "method": "バナー",
+          "description": "TikTok向けバナー広告"
+        },
+        "25": {
+          "id": "25",
+          "media": "meta",
+          "target": "ストーリー、リールメイン",
+          "method": "語り",
+          "description": "Instagram/Facebook縦型動画（語り）"
+        },
+        "26": {
+          "id": "26",
+          "media": "meta",
+          "target": "ストーリー、リールメイン",
+          "method": "漫画",
+          "description": "Instagram/Facebook縦型動画（漫画）"
+        },
+        "27": {
+          "id": "27",
+          "media": "meta",
+          "target": "ストーリー、リールメイン",
+          "method": "ドラマ",
+          "description": "Instagram/Facebook縦型動画（ドラマ）"
+        },
+        "28": {
+          "id": "28",
+          "media": "meta",
+          "target": "ストーリー、リールメイン",
+          "method": "イラスト、AI",
+          "description": "Instagram/Facebook縦型動画（イラスト・AI）"
+        },
+        "29": {
+          "id": "29",
+          "media": "meta",
+          "target": "ストーリー、リールメイン",
+          "method": "通常",
+          "description": "Instagram/Facebook縦型動画（通常）"
+        },
+        "30": {
+          "id": "30",
+          "media": "meta",
+          "target": "縦型",
+          "method": "バナー",
+          "description": "縦型バナー広告"
+        },
+        "31": {
+          "id": "31",
+          "media": "meta",
+          "target": "正方形",
+          "method": "バナー",
+          "description": "正方形バナー広告"
+        },
+        "32": {
+          "id": "32",
+          "media": "LINE",
+          "target": "apng",
+          "method": "文字のみ/AI人物/通知風/ピクトグラム/イラスト/有名人・芸能人/商品画像",
+          "description": "LINE向けアニメーション広告（複数形式）"
+        },
+        "33": {
+          "id": "33",
+          "media": "LINE",
+          "target": "ニュース",
+          "method": "ニュース風正方形バナー",
+          "description": "LINEニュース面向け広告"
+        },
+        "34": {
+          "id": "34",
+          "media": "LINE",
+          "target": "voom",
+          "method": "通常語り",
+          "description": "LINE VOOM向け動画広告"
+        },
+        "35": {
+          "id": "35",
+          "media": "LINE",
+          "target": "adnetwork",
+          "method": "通常語り",
+          "description": "LINEアドネットワーク向け広告"
+        }
+      },
+      "outputFormat": {
+        "recommendedMedia": {
+          "description": "分類に基づく推奨媒体リスト（ID付き）",
+          "format": [
+            {
+              "mediaId": "ID番号",
+              "mediaName": "媒体名",
+              "target": "配信先",
+              "method": "獲得手法",
+              "reason": "推奨理由"
+            }
+          ]
+        },
+        "creativeRecommendations": {
+          "description": "具体的なクリエイティブ提案",
+          "format": [
+            {
+              "mediaId": "ID番号",
+              "creativeIdea": "クリエイティブアイデア",
+              "keyMessage": "訴求ポイント",
+              "visualStyle": "ビジュアルスタイル",
+              "referenceUrl": "参考URL（今後追加予定）"
+            }
+          ]
+        }
+      }
+    }
+  },
+  "systemFlow": {
+    "step1": "URL入力 → 商品情報スクレイピング",
+    "step2": "LLMによる詳細分析（CSVフォーマットに基づく）",
+    "step3": "市場タイプ判定（ニッチ/マス）",
+    "step4": "行動理由分類",
+    "step5": "媒体ID抽出とマッピング",
+    "step6": "具体的な獲得手法とクリエイティブアイデア生成",
+    "step7": "結果出力（ダッシュボード表示）"
+  }
+}
