@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { WebScraper } from '../../../lib/scraper-simple'
 import { GPTAnalyzer } from '../../../lib/gpt-analyzer'
 import { marketingTemplate } from '../../../lib/marketing-template'
+import { getRecommendedCreatives } from '../../../lib/creative-references'
 
 // 実際のスクレイピングを使った分析関数
 async function analyzeUrl(url: string) {
@@ -137,7 +138,8 @@ function generateAnalysisFromScrapedData(scrapedData: any, url: string) {
       reasoning: `${scrapedData.title}の特徴と価格帯から${marketType}と判定。${actionReason}の訴求が効果的と分析。`
     },
     persona: generatePersona(scrapedData, marketType),
-    recommendations: generateRecommendations(marketType, actionReason)
+    recommendations: generateRecommendations(marketType, actionReason),
+    creativeReferences: []  // 簡易分析では空配列を返す
   }
 }
 
@@ -363,7 +365,12 @@ function generateTsukuriokiMockData() {
           visualStyle: 'UGC風、自然な家庭の風景'
         }
       ]
-    }
+    },
+    creativeReferences: getRecommendedCreatives(
+      'mass',
+      'オファーが魅力的、とにかく安い（無料、500円オファー、LINE追加など）',
+      ['7', '25', '31']  // つくりおき.jpの推奨媒体ID
+    )
   }
 }
 
@@ -384,7 +391,8 @@ function generateDefaultMockData() {
     recommendations: {
       media: [],
       creative: []
-    }
+    },
+    creativeReferences: null
   }
 }
 

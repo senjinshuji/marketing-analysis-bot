@@ -1,5 +1,7 @@
 'use client'
 
+import CreativeReferences from './CreativeReferences'
+
 interface AnalysisResultProps {
   data: any
 }
@@ -331,6 +333,15 @@ export default function AnalysisResult({ data }: AnalysisResultProps) {
             ))}
           </div>
         </div>
+      )}
+
+      {/* 参考クリエイティブ */}
+      {data.creativeReferences && data.creativeReferences.length > 0 && (
+        <CreativeReferences 
+          creatives={data.creativeReferences}
+          marketType={data.classification?.marketType}
+          actionReason={data.classification?.actionReason}
+        />
       )}
     </div>
   )

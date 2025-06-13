@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { GPTAnalyzer } from '../../../lib/gpt-analyzer'
 import { marketingTemplate } from '../../../lib/marketing-template'
+import { getRecommendedCreatives } from '../../../lib/creative-references'
 
 export async function POST(request: NextRequest) {
   try {
@@ -18,6 +19,16 @@ export async function POST(request: NextRequest) {
       const phase2Result = await gptAnalyzer.executePhase2Analysis(scrapedData, phase1Result, marketingTemplate)
       const timing = Date.now() - startTime
       
+      // 推奨媒体IDを取得
+      const recommendedMediaIds = phase2Result.recommendations?.media?.map((m: any) => m.mediaId) || []
+      
+      // 参考クリエイティブを取得
+      const creativeReferences = getRecommendedCreatives(
+        phase2Result.classification?.marketType || '',
+        phase2Result.classification?.actionReason || '',
+        recommendedMediaIds
+      )
+      
       // 結果を統合
       const finalResult = {
         ...phase1Result,
@@ -27,6 +38,7 @@ export async function POST(request: NextRequest) {
           gender: phase1Result.persona?.profile?.gender || '男女両方',
           otherCharacteristics: phase1Result.persona?.profile?.familyStructure || '一般的な消費者層'
         },
+        creativeReferences,
         debug: {
           ...debugData,
           phase2: {

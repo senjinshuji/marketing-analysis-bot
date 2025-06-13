@@ -1,0 +1,9 @@
+id,mediaId,mediaName,target,method,creativeUrl,description,performance,tags
+creative_001,7,デマンドロング,YT面限定,語り,https://example.com/creative/001,共働き家庭の悩みを描いたストーリー動画,CTR 2.5%・CVR 1.2%,共感型・ストーリー・家族
+creative_002,25,meta,ストーリー・リールメイン,語り,https://example.com/creative/002,実際の利用者の声を集めたショート動画,CTR 3.1%・CVR 1.5%,UGC・実績訴求・リアル
+creative_003,31,meta,正方形,バナー,https://example.com/creative/003,商品画像と価格訴求のシンプルバナー,CTR 1.8%・CVR 0.9%,価格訴求・シンプル・直接的
+creative_004,1,リスティング,指名検索,指名入札,https://example.com/creative/004,ブランド名での検索広告,CTR 15%・CVR 5%,指名・ブランド・高CVR
+creative_005,2,リスティング,一般検索,一般入札,https://example.com/creative/005,課題解決型の検索広告文,CTR 3.5%・CVR 2.1%,課題解決・一般・検索意図
+creative_006,19,ByteDance,tiktok限定,語り,https://example.com/creative/006,インフルエンサーによる商品紹介,CTR 4.2%・CVR 1.8%,インフルエンサー・若年層・トレンド
+creative_007,10,デマンドロング,YT面限定,ドラマ,https://example.com/creative/007,日常の悩みを再現したドラマ仕立て,CTR 2.8%・CVR 1.4%,ドラマ・共感・ストーリー
+creative_008,32,LINE,apng,文字のみ,https://example.com/creative/008,LINEトーク風の訴求,CTR 2.2%・CVR 1.1%,LINE・親近感・コミュニケーション
