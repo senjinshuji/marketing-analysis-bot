@@ -4,7 +4,5 @@
       "maxDuration": 60
     }
   },
-  "env": {
-    "OPENAI_API_KEY": "@openai-api-key"
-  }
+  "buildCommand": "npm install && npm run build"
 }
