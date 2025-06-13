@@ -40,6 +40,9 @@ async function analyzeUrl(url: string) {
       scrapedData = await scraper.scrapeUrl(url)
     }
     
+    // URLをscrapedDataに追加
+    scrapedData.url = url
+    
     console.log('スクレイピング結果:', scrapedData)
     
     // GPT-4を使用して詳細分析を実行

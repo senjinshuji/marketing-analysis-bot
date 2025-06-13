@@ -11,16 +11,24 @@ export class GPTAnalyzer {
 
   async analyzeProduct(scrapedData: any, marketingTemplate: any): Promise<any> {
     try {
+      console.log('GPTAnalyzer: 分析開始', { url: scrapedData.url, title: scrapedData.title })
+      
       // フェーズ1: マーケティングリサーチ分析
+      console.log('フェーズ1開始...')
       const phase1Result = await this.executePhase1Analysis(scrapedData)
+      console.log('フェーズ1完了:', phase1Result)
       
       // フェーズ2: 媒体分類・獲得戦略
+      console.log('フェーズ2開始...')
       const phase2Result = await this.executePhase2Analysis(scrapedData, phase1Result, marketingTemplate)
+      console.log('フェーズ2完了:', phase2Result)
       
       // 結果の統合
-      return this.mergeAnalysisResults(phase1Result, phase2Result)
+      const mergedResult = this.mergeAnalysisResults(phase1Result, phase2Result)
+      console.log('分析結果統合完了')
+      return mergedResult
     } catch (error) {
-      console.error('分析エラー:', error)
+      console.error('GPTAnalyzer分析エラー:', error)
       throw error
     }
   }
@@ -295,19 +303,19 @@ ${JSON.stringify(marketingTemplate.fullMediaDatabase, null, 2)}
   "recommendations": {
     "media": [
       {
-        "mediaId": "string",
-        "mediaName": "string",
-        "target": "string",
-        "method": "string",
-        "reason": "string（100文字以上）"
+        "mediaId": "1",
+        "mediaName": "媒体名",
+        "target": "ターゲット",
+        "method": "手法",
+        "reason": "選定理由（100文字以上）"
       }
     ],
     "creative": [
       {
-        "mediaName": "string",
-        "idea": "string",
-        "keyMessage": "string（15文字以内）",
-        "visualStyle": "string"
+        "mediaName": "媒体名",
+        "idea": "クリエイティブアイデア",
+        "keyMessage": "キーメッセージ（15文字以内）",
+        "visualStyle": "ビジュアルスタイル"
       }
     ]
   }
