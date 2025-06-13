@@ -246,7 +246,7 @@ function generateRecommendations(marketType: string, actionReason: string) {
     mediaIds = ['7', '25', '31'] // デフォルト
   }
 
-  const mediaDatabase = {
+  const mediaDatabase: { [key: string]: { mediaName: string; target: string; method: string } } = {
     '1': { mediaName: 'リスティング', target: '指名検索', method: '指名入札' },
     '7': { mediaName: 'デマンドロング', target: 'YT面限定', method: '語り' },
     '25': { mediaName: 'meta', target: 'ストーリー、リールメイン', method: '語り' },
