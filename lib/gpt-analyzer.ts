@@ -10,7 +10,23 @@ export class GPTAnalyzer {
   }
 
   async analyzeProduct(scrapedData: any, marketingTemplate: any): Promise<any> {
-    const prompt = this.createAnalysisPrompt(scrapedData, marketingTemplate)
+    try {
+      // フェーズ1: マーケティングリサーチ分析
+      const phase1Result = await this.executePhase1Analysis(scrapedData)
+      
+      // フェーズ2: 媒体分類・獲得戦略
+      const phase2Result = await this.executePhase2Analysis(scrapedData, phase1Result, marketingTemplate)
+      
+      // 結果の統合
+      return this.mergeAnalysisResults(phase1Result, phase2Result)
+    } catch (error) {
+      console.error('分析エラー:', error)
+      throw error
+    }
+  }
+
+  private async executePhase1Analysis(scrapedData: any): Promise<any> {
+    const prompt = this.createPhase1Prompt(scrapedData)
     
     try {
       const completion = await this.client.chat.completions.create({
@@ -18,18 +34,26 @@ export class GPTAnalyzer {
         messages: [
           {
             role: 'system',
-            content: `あなたは日本のデジタルマーケティング戦略の専門家です。10年以上の実務経験を持ち、特に以下の分野に精通しています：
-- 日本市場特有の消費者行動と購買パターン
-- 各種デジタル広告媒体の特性と効果的な活用方法
-- データドリブンなペルソナ設計とターゲティング戦略
-- ROIを最大化するメディアミックス戦略
+            content: `あなたは日本のデジタルマーケティング戦略の専門家です。
 
-以下の厳格なルールに従って分析を行ってください：
-1. 全ての数値データは日本市場の実態に基づいた現実的な推定値を使用
-2. 媒体選定は必ず論理的な根拠と共に提示
-3. ペルソナは実在する人物のように具体的に描写
-4. 必ず指定されたJSON形式で出力（余計な説明文は含めない）
-5. CSVテンプレートの全項目を漏れなく埋める`
+【フェーズ1: マーケティングリサーチ分析】
+目的: 商品の詳細分析と市場理解
+
+Step1: マスターデータ化
+- A列＝セクション見出し（商品、N1、提供価値など）として抽出
+- B列＝分類観点（プロフィール、機能価値など）を紐づける
+- 全体構造を「商品情報」「ペルソナ」「市場」「提供価値」にマッピング
+
+Step2: 詳細要素抽出
+- 各セクションの詳細項目（年齢、職業、趣味、RTBなど）を構造的にまとめる
+- 提供価値は機能・情緒に分けて整理
+- N1は年齢・生活リズム・メディア接触などに分解
+- 市場情報はカテゴリー・規模・コアターゲットなどに整理
+
+分析ルール:
+1. 日本市場の実態に基づいた現実的な推定値を使用
+2. ペルソナは実在する人物のように具体的に描写
+3. 必ずJSON形式で出力`
           },
           {
             role: 'user',
@@ -37,7 +61,7 @@ export class GPTAnalyzer {
           }
         ],
         temperature: 0.3,
-        max_tokens: 4000,
+        max_tokens: 3000,
         response_format: { type: "json_object" }
       })
 
@@ -46,10 +70,259 @@ export class GPTAnalyzer {
         return JSON.parse(content)
       }
       
-      throw new Error('予期しないレスポンス形式')
+      throw new Error('フェーズ1: 予期しないレスポンス形式')
     } catch (error) {
-      console.error('OpenAI API エラー:', error)
+      console.error('フェーズ1分析エラー:', error)
       throw error
+    }
+  }
+
+  private async executePhase2Analysis(scrapedData: any, phase1Result: any, marketingTemplate: any): Promise<any> {
+    const prompt = this.createPhase2Prompt(scrapedData, phase1Result, marketingTemplate)
+    
+    try {
+      const completion = await this.client.chat.completions.create({
+        model: 'gpt-4-1106-preview',
+        messages: [
+          {
+            role: 'system',
+            content: `あなたは日本のデジタルマーケティング戦略の専門家です。
+
+【フェーズ2: 媒体分類・獲得戦略】
+目的: 広告配信設計と媒体選定
+
+Step1: ジャンル分類
+- 商品の性質やターゲットの絞り込み度から、ニッチ市場かマスマーケットかを分類
+- 指名検索や専門課題訴求はニッチ、広範な属性への単純ベネフィット訴求はマスと判断
+
+Step2: 行動動機の分類
+- ユーザーが行動を起こす理由（悩み解決、自分ごと化、価格訴求、情緒的価値など）を抽出
+- 商品特性ごとに分類し、広告訴求文・クリエイティブ設計の根幹となる心理要因を明確化
+
+Step3: 獲得媒体の選定
+- 行動動機に対応した最適な媒体（リスティング、GDN、TikTok、LINEなど）を選定
+- 動機ベースの最適媒体設計により、媒体別パフォーマンスを最大化
+
+Step4: 参考クリエイティブIDの参照
+- 各動機×媒体における制作アイディアを提供
+- 演出や構成の具体的なイメージを提示
+
+分析ルール:
+1. 媒体選定は必ず論理的な根拠と共に提示
+2. 必ずJSON形式で出力`
+          },
+          {
+            role: 'user',
+            content: prompt
+          }
+        ],
+        temperature: 0.3,
+        max_tokens: 2000,
+        response_format: { type: "json_object" }
+      })
+
+      const content = completion.choices[0].message.content
+      if (content) {
+        return JSON.parse(content)
+      }
+      
+      throw new Error('フェーズ2: 予期しないレスポンス形式')
+    } catch (error) {
+      console.error('フェーズ2分析エラー:', error)
+      throw error
+    }
+  }
+
+  private createPhase1Prompt(scrapedData: any): string {
+    return `【フェーズ1: マーケティングリサーチ分析】
+
+## 分析対象商品情報
+- URL: ${scrapedData.url || 'N/A'}
+- タイトル: ${scrapedData.title}
+- 説明: ${scrapedData.description}
+- 価格: ${scrapedData.price}
+- カテゴリー: ${scrapedData.category}
+- 特徴: ${JSON.stringify(scrapedData.features)}
+
+## 分析指示
+以下の構造に従って、商品の詳細分析を行ってください。
+
+### セクション1: 商品情報
+- 商品名: 正式な商品名
+- カテゴリー: 業界標準のカテゴリー分類
+- サイズ・容量: 具体的な数値と単位
+- 機能: 最低5つ以上の具体的な機能（技術的特徴も含む）
+- 効果: 最低3つ以上のユーザーが得られる効果・ベネフィット
+- RTB (Reason to Believe): 効果を裏付ける科学的根拠、実績、エビデンス
+- 権威性: 認証、受賞歴、専門家の推薦等
+
+### セクション2: 価格・販売情報
+- 通常価格: 税込価格
+- 特別オファー: キャンペーン価格、割引率
+- キャンペーン情報: 期間限定、数量限定等の詳細
+- 発売日: 推定でも可
+- 販売チャネル: オンライン/オフライン、具体的な販売場所
+
+### セクション3: 市場分析
+- 市場定義: 商品が属する市場の明確な定義
+- 市場カテゴリー: 大分類/中分類/小分類
+- 市場規模: 日本市場での推定規模（億円単位）
+- 戦略ターゲット: マーケティング戦略上の広いターゲット層
+- コアターゲット: 最も重要な購買層（全体の30-40%）
+
+### セクション4: 提供価値
+- 機能価値: 最低3つ、商品が解決する具体的な問題や利便性
+- 情緒価値: 誰が/どんな状況で/どう感じるかを明確に記述
+
+### セクション5: N1ペルソナ
+具体的な一人の人物として以下を設定：
+- プロフィール: 年齢、性別、居住地、職業、役職、年収、最終学歴
+- ライフスタイル: 家族構成、平日/休日の過ごし方、趣味
+- メディア接触: よく利用するメディア・SNS
+- カスタマージャーニー:
+  - 状況: 購買検討のきっかけ
+  - 体感: その時の身体的な感覚
+  - 本能: 根源的な欲求
+  - 知覚: 何に気づいたか
+  - 感情: どんな感情を抱いたか
+  - 欲求: 具体的に何を求めたか
+  - 需要: 最終的にどんな商品を必要としたか
+
+## 出力形式
+{
+  "productInfo": {
+    "productName": "string",
+    "category": "string",
+    "sizeCapacity": "string",
+    "features": ["string"],
+    "effects": ["string"],
+    "rtb": "string",
+    "authority": "string"
+  },
+  "pricing": {
+    "regularPrice": "string",
+    "specialPrice": "string",
+    "campaign": "string",
+    "releaseDate": "string",
+    "salesChannel": "string"
+  },
+  "marketAnalysis": {
+    "marketDefinition": "string",
+    "marketCategory": "string",
+    "marketSize": "string",
+    "strategyTarget": "string",
+    "coreTarget": "string"
+  },
+  "valueProposition": {
+    "functionalValue": ["string"],
+    "emotionalValue": "string"
+  },
+  "persona": {
+    "profile": {
+      "age": "string",
+      "gender": "string",
+      "location": "string",
+      "occupation": "string",
+      "position": "string",
+      "industry": "string",
+      "income": "string",
+      "education": "string",
+      "familyStructure": "string",
+      "lifestyle": "string",
+      "interests": "string",
+      "mediaUsage": "string"
+    },
+    "journey": {
+      "situation": "string",
+      "sensory": "string",
+      "instinct": "string",
+      "perception": "string",
+      "emotion": "string",
+      "desire": "string",
+      "demand": "string"
+    }
+  }
+}`
+  }
+
+  private createPhase2Prompt(scrapedData: any, phase1Result: any, marketingTemplate: any): string {
+    return `【フェーズ2: 媒体分類・獲得戦略】
+
+## フェーズ1分析結果
+${JSON.stringify(phase1Result, null, 2)}
+
+## 分析指示
+
+### Step1: ジャンル分類
+以下の基準で判定してください：
+- ニッチマーケット: 特定層への深い訴求が必要、専門性が高い、ターゲットが限定的
+- マスマーケット: 幅広い層への訴求が可能、一般的な商品、大規模市場
+
+### Step2: 行動動機の分類
+以下から最適なものを1つ選択：
+- ニッチ：自分ごと化させて行動してもらう（共感型）
+- ニッチ：to B向けに適した配信（ビジネス利用）
+- マス向け：オファーが魅力的、とにかく安い（価格訴求型）
+- マス向け：訴求が強い、権威性がある、悩みが解決できる（課題解決型）
+- マス向け：新事実系、テクスチャーが特徴的（新規性・差別化型）
+
+### Step3: 獲得媒体の選定
+分類に基づいて、以下の対応表から最適な媒体を3つ選択：
+
+【分類別推奨媒体ID】
+- ニッチ×自分ごと化: 1,2,7,19,22,23,24,25,28,29,30,31,33
+- ニッチ×toB向け: 1,2,3,4,5,6,7,25,28,29,30,31
+- マス×オファー魅力: 7,10,11,13,16,17,19,21,22,24,25,27,28,30,31
+- マス×権威性: 7,8,11,12,13,14,17,18,19,22,23,24,25,28,29,31
+- マス×新事実: 7,25,32,33
+
+【利用可能な媒体データベース】
+${JSON.stringify(marketingTemplate.fullMediaDatabase, null, 2)}
+
+### Step4: クリエイティブ提案
+選択した3つの媒体それぞれに対して：
+- 具体的なクリエイティブアイデア
+- キーメッセージ（15文字以内）
+- ビジュアルスタイル
+
+## 出力形式
+{
+  "classification": {
+    "marketType": "ニッチマーケット狙い または マスマーケット狙い",
+    "actionReason": "選択した行動理由分類",
+    "reasoning": "この分類を選んだ3つ以上の具体的根拠"
+  },
+  "recommendations": {
+    "media": [
+      {
+        "mediaId": "string",
+        "mediaName": "string",
+        "target": "string",
+        "method": "string",
+        "reason": "string（100文字以上）"
+      }
+    ],
+    "creative": [
+      {
+        "mediaName": "string",
+        "idea": "string",
+        "keyMessage": "string（15文字以内）",
+        "visualStyle": "string"
+      }
+    ]
+  }
+}`
+  }
+
+  private mergeAnalysisResults(phase1Result: any, phase2Result: any): any {
+    return {
+      ...phase1Result,
+      ...phase2Result,
+      demographics: phase1Result.demographics || {
+        ageRange: `${phase1Result.persona.profile.age}を中心とした年齢層`,
+        gender: phase1Result.persona.profile.gender,
+        otherCharacteristics: phase1Result.persona.profile.familyStructure
+      }
     }
   }
 
