@@ -1,19 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { WebScraper } from '../../../lib/scraper-simple'
 import { GPTAnalyzer } from '../../../lib/gpt-analyzer'
 import { marketingTemplate } from '../../../lib/marketing-template'
-
-// 環境に応じてスクレイパーを選択
-let WebScraper: any
-if (process.env.VERCEL) {
-  WebScraper = require('../../../lib/scraper-simple').WebScraper
-} else {
-  try {
-    WebScraper = require('../../../lib/scraper-puppeteer').WebScraper
-  } catch (e) {
-    // Puppeteerが使えない場合はシンプル版を使用
-    WebScraper = require('../../../lib/scraper-simple').WebScraper
-  }
-}
 
 // 実際のスクレイピングを使った分析関数
 async function analyzeUrl(url: string) {
