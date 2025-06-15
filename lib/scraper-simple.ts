@@ -31,12 +31,19 @@ export class WebScraper {
     const urlObj = new URL(url)
     const domain = urlObj.hostname.replace('www.', '')
     
+    // 一般的なEC/LPサイトの価格パターンヒント
+    const priceHints = [
+      '初回限定価格あり（LPに記載されている可能性高）',
+      'キャンペーン価格の可能性を確認',
+      '定期初回価格の可能性を確認'
+    ]
+    
     return {
       title: `${domain} - 商品ページ`,
-      description: 'このURLの商品情報をGPT-4で分析します。実際のスクレイピングはローカル環境でのみ利用可能です。',
+      description: 'このURLの商品情報をGPT-4で分析します。LPには必ず初回価格やキャンペーン価格が大きく表示されているはずです。',
       price: '',
       images: [],
-      features: ['URLから分析を実行します'],
+      features: ['URLから分析を実行します', ...priceHints],
       category: '',
       metaDescription: '',
       ogTitle: '',
