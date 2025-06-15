@@ -1,6 +1,8 @@
 'use client'
 
 import CreativeReferences from './CreativeReferences'
+import LPScoreCard from './LPScoreCard'
+import { calculateLPScore } from '../../lib/lp-scorer'
 
 interface AnalysisResultProps {
   data: any
@@ -8,9 +10,14 @@ interface AnalysisResultProps {
 
 export default function AnalysisResult({ data }: AnalysisResultProps) {
   if (!data) return null
+  
+  // LPスコアを計算
+  const lpScore = calculateLPScore(data)
 
   return (
     <div className="space-y-8">
+      {/* LP診断スコア */}
+      <LPScoreCard scoreData={lpScore} />
       {/* 基本情報 */}
       <div className="bg-white rounded-lg shadow-lg p-6">
         <h2 className="text-2xl font-bold text-gray-900 mb-6">商品・製品情報</h2>

@@ -39,6 +39,8 @@ export async function POST(request: NextRequest) {
           otherCharacteristics: phase1Result.persona?.profile?.familyStructure || '一般的な消費者層'
         },
         creativeReferences,
+        // スクレイピングデータを含める（LP診断用）
+        scrapedData: scrapedData,
         debug: {
           ...debugData,
           phase2: {
