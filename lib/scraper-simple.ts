@@ -12,6 +12,15 @@ export interface ScrapedData {
   ogDescription: string
   structuredData: any
   url?: string
+  productName?: string
+  prices?: any
+  effects?: string[]
+  ingredients?: string[]
+  company?: string
+  campaign?: string
+  guarantee?: string
+  authority?: string[]
+  additionalData?: any
 }
 
 export class WebScraper {

@@ -1,5 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { WebScraper } from '../../../lib/scraper-simple'
+import { APIWebScraper } from '../../../lib/scraper-api'
+import { HybridScraper } from '../../../lib/scraper-hybrid'
+import { FreeEnhancedScraper } from '../../../lib/scraper-free-enhanced'
+import { ComprehensiveScraper } from '../../../lib/scraper-comprehensive'
+import { ScraperWithWait } from '../../../lib/scraper-with-wait'
 import { GPTAnalyzer } from '../../../lib/gpt-analyzer'
 import { marketingTemplate } from '../../../lib/marketing-template'
 import { getRecommendedCreatives } from '../../../lib/creative-references'
@@ -30,7 +35,8 @@ async function analyzeUrl(url: string) {
     }
   }
   
-  const scraper = new WebScraper()
+  // 待機時間付きスクレイパーを使用（動的コンテンツ対応）
+  const scraper = new ScraperWithWait()
   
   try {
     // スクレイピング実行

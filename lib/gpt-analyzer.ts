@@ -1,8 +1,10 @@
 import OpenAI from 'openai'
 import { generatePriceDetectionHints } from './price-patterns'
+import { MarketAnalyzer } from './market-analyzer'
 
 export class GPTAnalyzer {
   private client: OpenAI
+  private marketAnalyzer: MarketAnalyzer
   private lastPhase1Prompt: string = ''
   private lastPhase2Prompt: string = ''
 
@@ -10,6 +12,7 @@ export class GPTAnalyzer {
     this.client = new OpenAI({
       apiKey: apiKey,
     })
+    this.marketAnalyzer = new MarketAnalyzer()
   }
 
   async analyzeProduct(scrapedData: any, marketingTemplate: any): Promise<any> {
@@ -18,6 +21,24 @@ export class GPTAnalyzer {
       
       // 単一の統合プロンプトで高速化
       const result = await this.executeCombinedAnalysis(scrapedData, marketingTemplate)
+      
+      // 市場分析の精度向上
+      if (result.marketAnalysis) {
+        const marketData = this.marketAnalyzer.analyzeMarket(result)
+        result.marketAnalysis = {
+          ...result.marketAnalysis,
+          marketSize: marketData.marketSize,
+          marketCategory: marketData.marketCategory,
+          marketDefinition: marketData.marketDefinition || result.marketAnalysis.marketDefinition
+        }
+        
+        // 市場タイプの再判定
+        if (result.classification) {
+          result.classification.marketType = marketData.marketType + 'マーケット狙い'
+          result.classification.reasoning = marketData.reasoning.join('、')
+        }
+      }
+      
       console.log('分析完了')
       return result
     } catch (error) {
@@ -69,7 +90,7 @@ export class GPTAnalyzer {
         messages: [
           {
             role: 'system',
-            content: `あなたは日本のデジタルマーケティング戦略の専門家です。
+            content: `あなたは日本のデジタルマーケティング戦略の専門家です。日本の市場データに精通しています。
 
 【フェーズ1: マーケティングリサーチ分析】
 目的: 商品の詳細分析と市場理解
@@ -113,6 +134,15 @@ Step2: 詳細要素抽出
   }
 
   async executePhase2Analysis(scrapedData: any, phase1Result: any, marketingTemplate: any): Promise<any> {
+    // 市場分析を先に実施
+    const marketData = this.marketAnalyzer.analyzeMarket(phase1Result)
+    
+    // 市場データをphase1Resultに追加
+    phase1Result.marketAnalysis = {
+      ...phase1Result.marketAnalysis,
+      ...marketData
+    }
+    
     const prompt = this.createPhase2Prompt(scrapedData, phase1Result, marketingTemplate)
     this.lastPhase2Prompt = prompt
     
@@ -184,60 +214,61 @@ Step4: 参考クリエイティブIDの参照
 
 ${priceHints}
 
-## 最重要指示：価格情報の正確な取得
-このURLは実際のランディングページです。日本のLPには必ず以下の価格情報が存在します：
+## 最重要指示：スクレイピングデータの正確な使用
 
-1. **初回限定価格**（最も一般的）
-   - 「初回980円」「初回限定1,980円」「初回特別価格2,980円」
-   - 通常は通常価格の50%～90%OFF
+**注意：以下のスクレイピングデータが提供されています。これらは実際のLPから取得したデータです。**
 
-2. **お試し/トライアル価格**
-   - 「お試し500円」「トライアルセット1,000円」「モニター価格100円」
+### スクレイピングされた価格情報：
+${JSON.stringify(scrapedData.prices || {}, null, 2)}
 
-3. **定期購入初回価格**
-   - 「定期初回980円」「定期便特価1,980円」
+### 画像内の価格情報の可能性：
+${scrapedData.additionalData?.hasPriceInImage ? '**重要: 価格が画像内に表示されている可能性があります。特にcv01.jpg, cv02.jpgなどの画像に初回価格（980円など）が含まれている可能性が高いです。**' : '画像内価格は検出されませんでした。'}
 
-4. **キャンペーン価格**
-   - 「今だけ特別価格」「期間限定キャンペーン」
+### スクレイピングされたその他の情報：
+- 商品名: ${scrapedData.productName || scrapedData.title}
+- カテゴリー: ${scrapedData.category}
+- 会社: ${scrapedData.company || ''}
+- キャンペーン: ${scrapedData.campaign || ''}
+- 保証: ${scrapedData.guarantee || ''}
+- 権威性: ${JSON.stringify(scrapedData.authority || [])}
 
-※重要：分析対象の商品カテゴリーと説明から、適切な初回価格を推定してください。
-例：健康食品→980円、化粧品→1,980円、高級美容機器2,980円
+**重要：上記のスクレイピングデータを必ず使用してください。価格情報は絶対に推測せず、スクレイピングデータのみを使用してください。**
+**データが不足している場合は「データなし」または「取得できず」と記載し、決して一般的な例や推測値を使用しないでください。**
 
 ## 分析指示
-以下の構造に従って、商品の詳細分析を行ってください。
+以下の構造に従って、スクレイピングデータを基に分析を行ってください。
 
-### セクション1: 商品情報
-- 商品名: 正式な商品名
-- カテゴリー: 業界標準のカテゴリー分類
-- サイズ・容量: 具体的な数値と単位
-- 機能: 最低5つ以上の具体的な機能（技術的特徴も含む）
-- 効果: 最低3つ以上のユーザーが得られる効果・ベネフィット
-- RTB (Reason to Believe): 効果を裏付ける科学的根拠、実績、エビデンス
-- 権威性: 認証、受賞歴、専門家の推薦等
+### セクション1: 商品情報（スクレイピングデータを使用）
+- 商品名: ${scrapedData.productName || scrapedData.title || 'スクレイピングデータを参照'}
+- カテゴリー: ${scrapedData.category || 'スクレイピングデータを参照'}
+- サイズ・容量: スクレイピングデータまたは構造化データから抜粋
+- 機能: ${scrapedData.features?.length > 0 ? 'スクレイピングされた特徴を使用' : 'データから分析'}
+- 効果: ${scrapedData.effects?.length > 0 ? 'スクレイピングされた効果を使用' : 'データから分析'}
+- RTB (Reason to Believe): スクレイピングデータの権威性情報から抜粋
+- 権威性: ${scrapedData.authority?.length > 0 ? JSON.stringify(scrapedData.authority) : 'データから分析'}
 
-### セクション2: 価格・販売情報（最重要：LPの価格訴求を必ず反映）
-- 通常価格: 税込価格を明記
-- 特別オファー: 以下のパターンを必ず確認して記載
-  1. 初回限定価格：「初回○○円」「初回限定○○円」「初回特別価格」
-  2. お試し価格：「お試し○○円」「トライアル○○円」「モニター価格○○円」
-  3. 定期初回価格：「定期初回○○円」「定期便特価」「定期コース初回」
-  4. キャンペーン価格：「今だけ○○円」「期間限定○○円」「特別価格」
-  - 例：「通常価格5,000円→初回980円（80%OFF）」のように割引率も併記
-  - LPでは必ず初回価格や特別価格が大きく表示されているはずです
-- キャンペーン情報: 期間限定、数量限定、先着順等の詳細
-- 発売日: 推定でも可
-- 販売チャネル: オンライン/オフライン、具体的な販売場所
+### セクション2: 価格・販売情報（スクレイピングデータを使用）
+- 通常価格: ${scrapedData.prices?.regular ? scrapedData.prices.regular.text : 'スクレイピングデータになし'}
+- 特別オファー: ${scrapedData.prices?.campaign ? scrapedData.prices.campaign.text : 'スクレイピングデータになし'}
+- キャンペーン情報: ${scrapedData.campaign || 'スクレイピングデータになし'}
+- 発売日: スクレイピングデータから推定
+- 販売チャネル: オンライン（${scrapedData.url}）
 
-### セクション3: 市場分析
+### セクション3: 市場分析（重要：日本の実際の市場データに基づいて分析）
 - 市場定義: 商品が属する市場の明確な定義
 - 市場カテゴリー: 大分類/中分類/小分類
-- 市場規模: 日本市場での推定規模（億円単位）
+- 市場規模: 日本市場での実際の規模（億円単位）
+  注：以下は参考データですが、実際の商品カテゴリーに基づいて適切な市場規模を判断してください
+  - 健康食品市場 約9,000億円、サプリメント市場 約1,500億円
+  - 化粧品市場 約2兆8,000億円、スキンケア市場 約1兆2,000億円
+  - 宅配食市場 約1,500億円、ダイエット食品市場 約2,500億円
 - 戦略ターゲット: マーケティング戦略上の広いターゲット層
 - コアターゲット: 最も重要な購買層（全体の30-40%）
 
-### セクション4: 提供価値
-- 機能価値: 最低3つ、商品が解決する具体的な問題や利便性
-- 情緒価値: 誰が/どんな状況で/どう感じるかを明確に記述
+### セクション4: 提供価値（スクレイピングデータから分析）
+- 機能価値: ${scrapedData.effects?.length > 0 ? 'スクレイピングされた効果から分析' : '特徴から推測'}
+  - スクレイピングされた効果: ${JSON.stringify(scrapedData.effects || [])}
+- 情緒価値: ターゲットと商品特性から分析
 
 ### セクション5: N1ペルソナ
 具体的な一人の人物として以下を設定：
@@ -321,11 +352,14 @@ ${JSON.stringify(phase1Result, null, 2)}
 ### Step1: ジャンル分類
 以下の基準で判定してください：
 
-**重要：フェーズ1で取得した初回価格・特別価格を必ず使用して判定してください**
+**重要：フェーズ1で取得した価格情報と市場データを使用して判定**
+
+※実際の価格：${phase1Result.pricing?.specialPrice || phase1Result.pricing?.regularPrice || 'データなし'}
+※市場規模：${phase1Result.marketAnalysis?.marketSize || '不明'}
+※市場カテゴリー：${phase1Result.marketAnalysis?.marketCategory || '不明'}
 
 **マスマーケット判定基準**（以下のいずれかに該当）:
-1. 初回価格が3,000円以下（送料込み）で、かつ市場規模が100億円以上
-   - 例：初回980円、初回1,980円、お試し2,980円など
+1. スクレイピングで取得した初回価格が3,000円以下（送料込み）で、かつ市場規模が100億円以上
 2. 市場規模が500億円以上
 3. ターゲット層が全人口の20%以上を占める一般的な悩み・ニーズ
 4. 日用品・消耗品カテゴリー
@@ -417,14 +451,11 @@ ${JSON.stringify(marketingTemplate.fullMediaDatabase, null, 2)}
 - 価格: ${scrapedData.price}
 - 特徴: ${JSON.stringify(scrapedData.features)}
 
-## 重要：価格情報の取り扱い
-このURLのLPには必ず初回価格やキャンペーン価格が記載されています。
-一般的なLP構成：
-- ファーストビューに大きく「初回限定○○円」などの特別価格
-- 通常価格からの割引率（50%OFF、80%OFFなど）
-- 「今だけ」「期間限定」などの限定性を示す文言
+## スクレイピングデータから取得した情報：
+${JSON.stringify(scrapedData, null, 2)}
 
-必ず初回価格・特別価格を探して分析に反映してください。
+**重要：上記のスクレイピングデータは実際のLPから取得したものです。このデータのみを使用し、価格の推測や一般的な例は絶対に使用しないでください。**
+**価格情報が取得できていない場合は「価格データ取得できず」と明記し、カテゴリーから価格を推測することは避けてください。**
 
 ## 必須分析項目
 1. 商品情報（名称、カテゴリー、特徴、効果、RTB、権威性）
@@ -470,18 +501,14 @@ JSON形式で、全ての項目を漏れなく出力してください。`
 - カテゴリー: ${scrapedData.category}
 - 特徴: ${JSON.stringify(scrapedData.features)}
 
-## 最重要：価格情報の取得と市場タイプ判定
-1. **価格の探し方**
-   - LPでは必ず目立つ位置に特別価格が表示されています
-   - 「初回」「お試し」「限定」「キャンペーン」などのキーワードと共に価格が記載されています
-   - 例：健康食品なら「初回980円」、化粧品なら「初回1,980円」、サプリなら「初回500円」など
-   - 通常価格と特別価格の両方を必ず記載してください
-
-2. **市場タイプ判定基準**
-   - 初回価格3,000円以下＋市場規模100億円以上 → マスマーケット
-   - 初回価格5,000円以上 → ニッチマーケット
-   - 日用品・消耗品カテゴリー → マスマーケット
-   - 専門性が高い商品 → ニッチマーケット
+## スクレイピングデータの活用
+以下のスクレイピングデータを必ず使用して分析してください：
+- 価格情報: ${JSON.stringify(scrapedData.prices || {})}
+- 特徴: ${JSON.stringify(scrapedData.features || [])}
+- 効果: ${JSON.stringify(scrapedData.effects || [])}
+- 成分: ${JSON.stringify(scrapedData.ingredients || [])}
+- 権威性: ${JSON.stringify(scrapedData.authority || [])}
+- 保証: ${scrapedData.guarantee || ''}
 
 ## 必須分析項目と具体的な指示
 
