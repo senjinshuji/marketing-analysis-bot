@@ -26,18 +26,38 @@ export class ScraperWithWait {
         return freeRenderResult
       }
 
-      // 4. Edge Functionでの最終試行
-      return await this.scrapeWithEdgeFunction(url)
+      // 4. 基本的なfetchでの最終試行
+      return await this.basicFetch(url)
       
     } catch (error) {
       console.error('待機型スクレイピングエラー:', error)
-      throw error
+      // エラーが発生しても最低限のデータを返す
+      return {
+        title: 'スクレイピングエラー',
+        description: `エラー: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        price: '',
+        images: [],
+        features: ['スクレイピングに失敗しました', 'URLをご確認ください'],
+        category: '',
+        metaDescription: '',
+        ogTitle: '',
+        ogDescription: '',
+        structuredData: null,
+        url,
+        error: true
+      }
     }
   }
 
   // Browserless (無料枠あり)
   private async scrapeWithBrowserless(url: string): Promise<ScrapedData | null> {
-    const BROWSERLESS_TOKEN = process.env.BROWSERLESS_TOKEN || 'free-trial'
+    const BROWSERLESS_TOKEN = process.env.BROWSERLESS_TOKEN
+    
+    // トークンがない場合はスキップ
+    if (!BROWSERLESS_TOKEN || BROWSERLESS_TOKEN === 'free-trial') {
+      console.log('Browserless token not configured, skipping')
+      return null
+    }
     
     try {
       const response = await fetch(`https://chrome.browserless.io/scrape?token=${BROWSERLESS_TOKEN}`, {
@@ -209,20 +229,30 @@ export class ScraperWithWait {
     return null
   }
 
-  // Edge Functionで待機
-  private async scrapeWithEdgeFunction(url: string): Promise<ScrapedData> {
-    const response = await fetch('/api/scrape-with-delay', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ url })
-    })
+  // 基本的なfetchでスクレイピング
+  private async basicFetch(url: string): Promise<ScrapedData> {
+    try {
+      console.log('Basic fetch開始:', url)
+      const response = await fetch(url, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
+          'Accept-Language': 'ja,en-US;q=0.9,en;q=0.8',
+          'Accept-Encoding': 'gzip, deflate'
+        }
+      })
 
-    if (!response.ok) {
-      throw new Error(`Edge scraping failed: ${response.status}`)
+      if (!response.ok) {
+        throw new Error(`Fetch failed: ${response.status}`)
+      }
+
+      const html = await response.text()
+      console.log('HTML取得成功, サイズ:', html.length)
+      return this.parseHTMLWithWait(html, url)
+    } catch (error) {
+      console.error('Basic fetch error:', error)
+      throw error
     }
-
-    const data = await response.json()
-    return this.parseEdgeData(data, url)
   }
 
   // Browserlessデータのパース
