@@ -86,26 +86,53 @@ async function analyzeUrl(url: string) {
 
 // スクレイピングデータから分析結果を生成
 function generateAnalysisFromScrapedData(scrapedData: any, url: string) {
-  // 基本的な市場タイプ判定ロジック
-  let marketType = 'マス向け'
-  let actionReason = 'オファーが魅力的、とにかく安い'
+  // デフォルトはニッチ
+  let marketType = 'ニッチ'
+  let actionReason = '自分ごと化させて行動してもらう'
   
-  // 価格帯による判定
+  // 価格情報の取得
+  let price = 0
   if (scrapedData.price) {
     const priceMatch = scrapedData.price.match(/[\d,]+/)
     if (priceMatch) {
-      const price = parseInt(priceMatch[0].replace(',', ''))
-      if (price > 10000) {
-        marketType = 'ニッチ'
-        actionReason = '自分ごと化させて行動してもらう'
-      }
+      price = parseInt(priceMatch[0].replace(',', ''))
     }
   }
   
-  // 特徴から判定
+  // カテゴリーから市場規模を推定
+  const category = scrapedData.category || ''
+  const title = scrapedData.title || ''
+  const description = scrapedData.description || ''
+  
+  // マスマーケット判定
+  // 1. 初回価格が3,000円以下で一般的なカテゴリー
+  if (price > 0 && price <= 3000) {
+    const massCategories = ['食品', '健康', '美容', 'サプリ', 'コスメ', '日用品']
+    if (massCategories.some(cat => category.includes(cat) || title.includes(cat))) {
+      marketType = 'マス向け'
+      actionReason = 'オファーが魅力的、とにかく安い'
+    }
+  }
+  
+  // 2. 日用品・消耗品カテゴリー
+  if (category.includes('日用') || category.includes('消耗') || 
+      description.includes('毎日') || description.includes('日常')) {
+    marketType = 'マス向け'
+    actionReason = 'オファーが魅力的、とにかく安い'
+  }
+  
+  // ニッチマーケット判定
+  // 1. 高価格商品
+  if (price > 5000) {
+    marketType = 'ニッチ'
+    actionReason = '訴求が強い、権威性がある、悩みが解決できる'
+  }
+  
+  // 2. 専門性が高い商品
   const features = scrapedData.features || []
   const hasSpecializedFeatures = features.some((f: string) => 
-    f.includes('専門') || f.includes('プロ') || f.includes('専用') || f.includes('特化')
+    f.includes('専門') || f.includes('プロ') || f.includes('専用') || 
+    f.includes('特化') || f.includes('B2B') || f.includes('法人')
   )
   
   if (hasSpecializedFeatures) {
@@ -315,9 +342,9 @@ function generateTsukuriokiMockData() {
       otherCharacteristics: '共働き、3or4人家族が7割'
     },
     classification: {
-      marketType: 'マス向け',
-      actionReason: 'オファーが魅力的、とにかく安い（無料、500円オファー、LINE追加など）',
-      reasoning: '共働き家庭の時短ニーズに対応し、幅広い層をターゲットとした宅配食サービス。価格メリットと利便性を前面に打ち出している。'
+      marketType: 'マスマーケット狙い',
+      actionReason: 'マス向け：オファーが魅力的、とにかく安い（価格訴求型）',
+      reasoning: '1人前798円という低価格帯で、宅配食市場（約1,500億円規模）をターゲット。共働き家庭という大きなセグメントを狙い、時短・便利さを訴求。'
     },
     persona: {
       age: '35歳',
