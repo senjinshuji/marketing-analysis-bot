@@ -35,8 +35,8 @@ async function analyzeUrl(url: string) {
     }
   }
   
-  // 待機時間付きスクレイパーを使用（動的コンテンツ対応）
-  const scraper = new ScraperWithWait()
+  // シンプルスクレイパーを使用
+  const scraper = new WebScraper()
   
   try {
     // スクレイピング実行
