@@ -37,33 +37,8 @@ export default function Home() {
         setDebugData(phase1Data.debug)
       }
       
-      // フェーズ2: 媒体戦略
-      setPhase('phase2')
-      const phase2Response = await fetch('/api/analyze-phase2', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          phase1Result: phase1Data.phase1,
-          scrapedData: phase1Data.scrapedData,
-          debugData: phase1Data.debug
-        }),
-      })
-      
-      if (!phase2Response.ok) {
-        // フェーズ2が失敗してもフェーズ1の結果を表示
-        console.error('フェーズ2失敗、フェーズ1の結果のみ表示')
-        setAnalysisData(phase1Data.phase1)
-      } else {
-        const finalData = await phase2Response.json()
-        setAnalysisData(finalData)
-        
-        // デバッグデータを更新
-        if (finalData.debug) {
-          setDebugData(finalData.debug)
-        }
-      }
+      // Phase1（カスタマージャーニーまで）で完了
+      setAnalysisData(phase1Data.phase1)
       
       setPhase('complete')
     } catch (error) {
@@ -80,10 +55,10 @@ export default function Home() {
       <div className="max-w-6xl mx-auto">
         <header className="text-center mb-12">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            マーケティング戦略分析Bot
+            LP分析・ペルソナ生成Bot
           </h1>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            商品URLを入力するだけで、詳細な市場分析と最適な広告戦略を自動生成します
+            商品URLを入力するだけで、詳細な市場分析とカスタマージャーニーを自動生成します
           </p>
         </header>
 

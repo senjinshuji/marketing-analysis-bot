@@ -290,66 +290,6 @@ export default function AnalysisResult({ data }: AnalysisResultProps) {
         </div>
       )}
 
-      {/* 推奨広告戦略 */}
-      <div className="bg-white rounded-lg shadow-lg p-6">
-        <h2 className="text-2xl font-bold text-gray-900 mb-6">推奨広告戦略</h2>
-        {data.recommendations?.media && data.recommendations.media.length > 0 ? (
-          <div className="space-y-4">
-            {data.recommendations.media.map((media: any, index: number) => (
-              <div key={index} className="border border-gray-200 rounded-lg p-4">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-lg text-gray-900">
-                      {media.mediaName}
-                    </h3>
-                    <p className="text-gray-600 mt-1">
-                      {media.target} - {media.method}
-                    </p>
-                    <p className="text-sm text-gray-500 mt-2">
-                      {media.reason}
-                    </p>
-                  </div>
-                  <span className="bg-primary-100 text-primary-800 text-xs px-2 py-1 rounded-full">
-                    ID: {media.mediaId}
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <p className="text-gray-500">推奨戦略を生成中...</p>
-        )}
-      </div>
-
-      {/* クリエイティブ提案 */}
-      {data.recommendations?.creative && (
-        <div className="bg-white rounded-lg shadow-lg p-6">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">クリエイティブ提案</h2>
-          <div className="space-y-4">
-            {data.recommendations.creative.map((creative: any, index: number) => (
-              <div key={index} className="bg-gray-50 p-4 rounded-lg">
-                <h3 className="font-semibold text-gray-900 mb-2">
-                  {creative.mediaName} 向けクリエイティブ
-                </h3>
-                <p className="text-gray-700 mb-2">{creative.idea}</p>
-                <div className="text-sm text-gray-600">
-                  <p><span className="font-medium">訴求ポイント:</span> {creative.keyMessage}</p>
-                  <p><span className="font-medium">ビジュアルスタイル:</span> {creative.visualStyle}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* 参考クリエイティブ */}
-      {data.creativeReferences && data.creativeReferences.length > 0 && (
-        <CreativeReferences 
-          creatives={data.creativeReferences}
-          marketType={data.classification?.marketType}
-          actionReason={data.classification?.actionReason}
-        />
-      )}
     </div>
   )
 }
