@@ -1,6 +1,5 @@
 'use client'
 
-import CreativeReferences from './CreativeReferences'
 import LPScoreCard from './LPScoreCard'
 import { calculateLPScore } from '../../lib/lp-scorer'
 
